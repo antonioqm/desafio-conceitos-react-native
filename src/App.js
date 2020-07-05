@@ -20,33 +20,24 @@ export default function App() {
       setRepositories(response.data);
     });
   },[])
+  // title: "Real rocketseat 123",
+  // url: "http://real.qm",
+  // techs: [
+  //   "node.js",
+  //   "js puro",
+  //   "css",
+  //   "vue js"
+  // ]
   async function handleLikeRepository(id) {
-    const response = await api.post(`repositories/${id}/like`, {
-      title: "Real rocketseat 123",
-      url: "http://real.qm",
-      techs: [
-        "node.js",
-        "js puro",
-        "css",
-        "vue js"
-      ]
+    const updatedRepository = await api.post(`repositories/${id}/like`);
+    const updatedRepositories = repositories.map(item => {
+      if (item.id === id) {
+        return updatedRepository.data;
+      }else {
+        return item;
+      }
     });
-
-    const repositoryIndex = repositories.findIndex(repository => repository.id === id);
-
-    console.log(repositoryIndex);
-    const repository = response.data;
-    const newRepositories = repositories;
-
-    newRepositories[repositoryIndex] = repository;
-
-    // newRepositories
-    
-
-
-    setRepositories([...repositories, newRepositories]);
-    // Implement "Like Repository" functionality
-
+    setRepositories(updatedRepositories);
   }
 
   return (
@@ -61,11 +52,11 @@ export default function App() {
             <>
             <Text style={styles.repository}>{repository.title}</Text>
             <View style={styles.techsContainer}>
-              {repository.techs.map(tech => (
+              {repository.techs && (repository.techs.map(tech => (
                 <Text key={tech} style={styles.tech}>
                   {tech}
                 </Text>
-              ))}
+              )))}
             </View>
             <View style={styles.likesContainer}>
               <Text
@@ -73,7 +64,7 @@ export default function App() {
                 // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
                 testID={`repository-likes-${repository.id}`}
               >
-                {`${repository.likes} curtidas`}
+                {repository.likes} curtidas
               </Text>
             </View>
 
