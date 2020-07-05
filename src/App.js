@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   SafeAreaView,
@@ -9,47 +9,87 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import api from "./services/api";
 
 export default function App() {
+  const [repositories, setRepositories] = useState([])
+
+  useEffect(() => {
+    api.get('repositories').then(response => {
+      // console.log(response.data)
+      setRepositories(response.data);
+    });
+  },[])
   async function handleLikeRepository(id) {
+    const response = await api.post(`repositories/${id}/like`, {
+      title: "Real rocketseat 123",
+      url: "http://real.qm",
+      techs: [
+        "node.js",
+        "js puro",
+        "css",
+        "vue js"
+      ]
+    });
+
+    const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+
+    console.log(repositoryIndex);
+    const repository = response.data;
+    const newRepositories = repositories;
+
+    newRepositories[repositoryIndex] = repository;
+
+    // newRepositories
+    
+
+
+    setRepositories([...repositories, newRepositories]);
     // Implement "Like Repository" functionality
+
   }
 
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#7159c1" />
       <SafeAreaView style={styles.container}>
-        <View style={styles.repositoryContainer}>
-          <Text style={styles.repository}>Repository 1</Text>
+        <FlatList
+          style={styles.repositoryContainer}
+          data={repositories}
+          keyExtractor={repository => repository.id}
+          renderItem={({item: repository}) => (
+            <>
+            <Text style={styles.repository}>{repository.title}</Text>
+            <View style={styles.techsContainer}>
+              {repository.techs.map(tech => (
+                <Text key={tech} style={styles.tech}>
+                  {tech}
+                </Text>
+              ))}
+            </View>
+            <View style={styles.likesContainer}>
+              <Text
+                style={styles.likeText}
+                // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
+                testID={`repository-likes-${repository.id}`}
+              >
+                {`${repository.likes} curtidas`}
+              </Text>
+            </View>
 
-          <View style={styles.techsContainer}>
-            <Text style={styles.tech}>
-              ReactJS
-            </Text>
-            <Text style={styles.tech}>
-              Node.js
-            </Text>
-          </View>
-
-          <View style={styles.likesContainer}>
-            <Text
-              style={styles.likeText}
-              // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
-              testID={`repository-likes-1`}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleLikeRepository(repository.id)}
+              // Remember to replace "1" below with repository ID: {`like-button-${repository.id}`}
+              testID={`like-button-${repository.id}`}
             >
-              3 curtidas
-            </Text>
-          </View>
+              <Text style={styles.buttonText}>Curtir</Text>
+            </TouchableOpacity>
+            </>
+            )}
+         >
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => handleLikeRepository(1)}
-            // Remember to replace "1" below with repository ID: {`like-button-${repository.id}`}
-            testID={`like-button-1`}
-          >
-            <Text style={styles.buttonText}>Curtir</Text>
-          </TouchableOpacity>
-        </View>
+        </FlatList>
       </SafeAreaView>
     </>
   );
@@ -65,6 +105,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     backgroundColor: "#fff",
     padding: 20,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
   repository: {
     fontSize: 32,
@@ -95,6 +143,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 10,
+    marginBottom: 40,
   },
   buttonText: {
     fontSize: 14,
